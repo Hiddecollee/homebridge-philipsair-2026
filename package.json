@@ -1,9 +1,9 @@
 {
-  "name": "homebridge-philipsair-2024",
-  "displayName": "Philips Air 2024",
-  "version": "1.0.5",
-  "description": "Homebridge plugin for philips air purifier and humidifier series 300 and 800.",
-  "author": "jmasarweh (https://github.com/jmasarweh/homebridge-philipsair-2024)",
+  "name": "homebridge-philipsair-2026",
+  "displayName": "Philips Air 2026",
+  "version": "1.0.6",
+  "description": "Homebridge plugin for philips air purifier and humidifier series 300 and 800. Fork with Node 18+ fix.",
+  "author": "Hiddecollee (https://github.com/Hiddecollee/homebridge-philipsair-2026)",
   "scripts": {
     "lint": "eslint --fix .",
     "watch": "npm run build && npm link && nodemon",
@@ -32,13 +32,13 @@
     "typescript-eslint": "^8.27.0"
   },
   "bugs": {
-    "url": "https://github.com/jmasarweh/homebridge-philipsair-2024/issues"
+    "url": "https://github.com/Hiddecollee/homebridge-philipsair-2026/issues"
   },
   "engines": {
     "node": ">=14.18.0",
     "homebridge": "^1.8.0"
   },
-  "homepage": "https://github.com/jmasarweh/homebridge-philipsair-2024#readme",
+  "homepage": "https://github.com/Hiddecollee/homebridge-philipsair-2026#readme",
   "keywords": [
     "philips",
     "homebridge-plugin",
@@ -52,6 +52,6 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jmasarweh/homebridge-philipsair-2024.git"
+    "url": "git+https://github.com/Hiddecollee/homebridge-philipsair-2026.git"
   }
 }

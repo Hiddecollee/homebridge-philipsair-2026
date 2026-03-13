@@ -2,7 +2,7 @@
     <img src="https://github.com/SeydX/homebridge-philipsair-platform/blob/master/images/logo.png" height="200">
 </p>
 
-# homebridge-philipsair-2024
+# homebridge-philipsair-2026
 
 [![npm](https://img.shields.io/npm/v/homebridge-philipsair-platform.svg?style=flat-square)](https://www.npmjs.com/package/homebridge-philipsair-platform)
 [![npm](https://img.shields.io/npm/dt/homebridge-philipsair-platform.svg?style=flat-square)](https://www.npmjs.com/package/homebridge-philipsair-platform)
@@ -11,8 +11,7 @@
 [![Discord](https://img.shields.io/discord/432663330281226270?color=728ED5&logo=discord&label=discord)](https://discord.gg/kqNCe2D)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square&maxAge=2592000)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NP4T3KASWQLD8)
 
-All credit to SeydX and the people he credits back in his plugins.
-[Click here](https://github.com/SeydX) to review more of his plugins.
+Fork by [Hiddecollee](https://github.com/Hiddecollee) with Node 18+ / ES module fix. Based on [jmasarweh/homebridge-philipsair-2024](https://github.com/jmasarweh/homebridge-philipsair-2024). All credit to SeydX and the people he credits back in his plugins.
 
 
 ## Info
@@ -37,8 +36,10 @@ For  AC0820 and AC0850 models:
 After [Homebridge](https://github.com/nfarina/homebridge) has been installed:
 
 ```
-sudo npm install -g --unsafe-perm homebridge-philipsair-platform@latest
+sudo npm install -g --unsafe-perm github:Hiddecollee/homebridge-philipsair-2026
 ```
+
+Or for Homebridge Config UI X: Plugins → search "homebridge-philipsair-2026" or install from GitHub URL.
 
 The plugin uses a library based on `python3`. To use the plugin, Python/Pip must be installed!
 
@@ -126,6 +127,8 @@ The following devices have been tested with this plugin and confirm that they wo
 - AC1715
 - AC0820 (Hopefully)
 - AC0850 (Hopefully)
+- AC3210
+- AC3220
 
 Not yet confirmed with new configuration approach:
 
