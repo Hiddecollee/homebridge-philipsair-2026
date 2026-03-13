@@ -113,6 +113,14 @@ class Handler {
   handleResponse(json) {
     this.obj = json;
 
+    // Normalize alternate key names (some devices/aioairctrl return different casing)
+    const altToCanonical = { Pwr: 'pwr', PM25: 'pm25', IAQL: 'iaql', Rh: 'rh', Temp: 'temp', Mode: 'mode', Om: 'om', Cl: 'cl', Func: 'func', Wl: 'wl', Rhset: 'rhset', Aqil: 'aqil' };
+    Object.entries(altToCanonical).forEach(([alt, canonical]) => {
+      if (this.obj[alt] !== undefined && this.obj[canonical] === undefined) {
+        this.obj[canonical] = this.obj[alt];
+      }
+    });
+
     Object.entries(this.keyMaps).forEach(([key, mappedKey]) => {
       this.obj[key] = this.valueMaps[key] ? this.valueMaps[key][this.obj[mappedKey]] : this.obj[mappedKey];
       delete this.obj[mappedKey];
@@ -538,43 +546,47 @@ class Handler {
         }
 
         if (this.wickFilterService) {
-          const fltwickchange = this.obj.wicksts == 0;
-          const fltwicklife = Math.round((this.obj.wicksts / 4800) * 100);
+          const wicksts = Number(this.obj.wicksts);
+          const fltwickchange = wicksts === 0;
+          const fltwicklife = Number.isFinite(wicksts) ? Math.round((wicksts / 4800) * 100) : 100;
 
           this.wickFilterService
             .updateCharacteristic(this.api.hap.Characteristic.FilterChangeIndication, fltwickchange)
-            .updateCharacteristic(this.api.hap.Characteristic.FilterLifeLevel, fltwicklife);
+            .updateCharacteristic(this.api.hap.Characteristic.FilterLifeLevel, Math.min(100, Math.max(0, fltwicklife)));
         }
       }
 
       if (this.preFilterService) {
-        const fltsts0change = this.obj.fltsts0 == 0;
-        const fltsts0maxlife = this.obj.flttotal0 ? this.obj.flttotal0 : 360;
-        const fltsts0life = (this.obj.fltsts0 / fltsts0maxlife) * 100;
+        const fltsts0 = Number(this.obj.fltsts0);
+        const fltsts0maxlife = Number(this.obj.flttotal0) || 360;
+        const fltsts0life = Number.isFinite(fltsts0) && fltsts0maxlife > 0 ? (fltsts0 / fltsts0maxlife) * 100 : 100;
+        const fltsts0change = fltsts0 === 0;
 
         this.preFilterService
           .updateCharacteristic(this.api.hap.Characteristic.FilterChangeIndication, fltsts0change)
-          .updateCharacteristic(this.api.hap.Characteristic.FilterLifeLevel, fltsts0life);
+          .updateCharacteristic(this.api.hap.Characteristic.FilterLifeLevel, Math.min(100, Math.max(0, fltsts0life)));
       }
 
       if (this.carbonFilterService) {
-        const fltsts2change = this.obj.fltsts2 == 0;
-        const fltsts2maxlife = this.obj.flttotal2 ? this.obj.flttotal2 : 4800;
-        const fltsts2life = (this.obj.fltsts2 / fltsts2maxlife) * 100;
+        const fltsts2 = Number(this.obj.fltsts2);
+        const fltsts2maxlife = Number(this.obj.flttotal2) || 4800;
+        const fltsts2life = Number.isFinite(fltsts2) && fltsts2maxlife > 0 ? (fltsts2 / fltsts2maxlife) * 100 : 100;
+        const fltsts2change = fltsts2 === 0;
 
         this.carbonFilterService
           .updateCharacteristic(this.api.hap.Characteristic.FilterChangeIndication, fltsts2change)
-          .updateCharacteristic(this.api.hap.Characteristic.FilterLifeLevel, fltsts2life);
+          .updateCharacteristic(this.api.hap.Characteristic.FilterLifeLevel, Math.min(100, Math.max(0, fltsts2life)));
       }
 
       if (this.hepaFilterService) {
-        const fltsts1change = this.obj.fltsts1 == 0;
-        const fltsts1maxlife = this.obj.flttotal1 ? this.obj.flttotal1 : 4800;
-        const fltsts1life = (this.obj.fltsts1 / fltsts1maxlife) * 100;
+        const fltsts1 = Number(this.obj.fltsts1);
+        const fltsts1maxlife = Number(this.obj.flttotal1) || 4800;
+        const fltsts1life = Number.isFinite(fltsts1) && fltsts1maxlife > 0 ? (fltsts1 / fltsts1maxlife) * 100 : 100;
+        const fltsts1change = fltsts1 === 0;
 
         this.hepaFilterService
           .updateCharacteristic(this.api.hap.Characteristic.FilterChangeIndication, fltsts1change)
-          .updateCharacteristic(this.api.hap.Characteristic.FilterLifeLevel, fltsts1life);
+          .updateCharacteristic(this.api.hap.Characteristic.FilterLifeLevel, Math.min(100, Math.max(0, fltsts1life)));
       }
       } catch (err) {
         logger.warn('Error updating characteristics', this.accessory.displayName, err.message);

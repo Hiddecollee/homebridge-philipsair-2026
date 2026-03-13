@@ -8,7 +8,7 @@ const Config = (deviceConfig) => {
     name: deviceConfig.name,
     manufacturer: deviceConfig.manufacturer || 'Philips',
     model: deviceConfig.model || 'Air Purifier',
-    serialNumber: deviceConfig.serialNumber || '000000',
+    serialNumber: (deviceConfig.serialNumber && String(deviceConfig.serialNumber).length > 1) ? deviceConfig.serialNumber : '000000',
     host: validIP(deviceConfig.host),
     port: deviceConfig.port || 5683,
     light: deviceConfig.light || false,
