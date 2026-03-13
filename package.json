@@ -1,7 +1,7 @@
 {
   "name": "homebridge-philipsair-2026",
   "displayName": "Philips Air 2026",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Homebridge plugin for philips air purifier and humidifier series 300 and 800. Fork with Node 18+ fix.",
   "author": "Hiddecollee (https://github.com/Hiddecollee/homebridge-philipsair-2026)",
   "scripts": {

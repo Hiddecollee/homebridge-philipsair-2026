@@ -136,12 +136,15 @@ class Handler {
   rotationSpeed() {
     let speedConfigIndex = this.speeds.findIndex((speedConfig) => {
       return Object.entries(speedConfig).every(([cmd, value]) => {
-        return this.obj[cmd].toString() == value.toString();
+        const objVal = this.obj[cmd];
+        if (objVal == null) return false;
+        return String(objVal) === String(value);
       });
     });
-    let speedIndex = speedConfigIndex + 1;
-    logger.debug(`#rotationSpeed: ${speedIndex * this.speedsMinStep()}`, this.accessory.displayName);
-    return speedIndex * this.speedsMinStep();
+    let speedIndex = speedConfigIndex >= 0 ? speedConfigIndex + 1 : 1;
+    const speed = speedIndex * this.speedsMinStep();
+    logger.debug(`#rotationSpeed: ${speed}`, this.accessory.displayName);
+    return speed;
   }
 
   //Air Purifier
@@ -437,28 +440,46 @@ class Handler {
     this.airControl = spawn(args.shift(), args);
 
     this.airControl.stdout.on('data', async (data) => {
-      this.handleResponse(JSON.parse(data.toString()));
+      try {
+        this.handleResponse(JSON.parse(data.toString()));
+      } catch (err) {
+        logger.warn('Failed to parse device response', this.accessory.displayName, err.message);
+        return;
+      }
 
-      //Air Purifier
+      try {
+      //Air Purifier - safe defaults when obj values are missing
+      const pwr = parseInt(this.obj.pwr, 10);
+      const pwrNum = Number.isFinite(pwr) ? pwr : 0;
       this.purifierService
-        .updateCharacteristic(this.api.hap.Characteristic.Active, parseInt(this.obj.pwr) ? 1 : 0)
-        .updateCharacteristic(this.api.hap.Characteristic.CurrentAirPurifierState, parseInt(this.obj.pwr) * 2)
+        .updateCharacteristic(this.api.hap.Characteristic.Active, pwrNum ? 1 : 0)
+        .updateCharacteristic(this.api.hap.Characteristic.CurrentAirPurifierState, pwrNum * 2)
         .updateCharacteristic(this.api.hap.Characteristic.TargetAirPurifierState, this.obj.mode === 'M' ? 0 : 1)
         .updateCharacteristic(this.api.hap.Characteristic.LockPhysicalControls, this.obj.cl ? 1 : 0)
         .updateCharacteristic(this.api.hap.Characteristic.RotationSpeed, this.rotationSpeed());
 
       if (this.airQualityService) {
+        const iaql = Number(this.obj.iaql);
+        const pm25 = Number(this.obj.pm25);
+        const airQuality = Number.isFinite(iaql) ? Math.ceil(iaql / 3) : 0;
+        const pm25Density = Number.isFinite(pm25) ? pm25 : 0;
         this.airQualityService
-          .updateCharacteristic(this.api.hap.Characteristic.AirQuality, Math.ceil(this.obj.iaql / 3))
-          .updateCharacteristic(this.api.hap.Characteristic.PM2_5Density, this.obj.pm25);
+          .updateCharacteristic(this.api.hap.Characteristic.AirQuality, airQuality)
+          .updateCharacteristic(this.api.hap.Characteristic.PM2_5Density, pm25Density);
       }
 
       if (this.temperatureService) {
-        this.temperatureService.updateCharacteristic(this.api.hap.Characteristic.CurrentTemperature, this.obj.temp);
+        const temp = Number(this.obj.temp);
+        if (Number.isFinite(temp)) {
+          this.temperatureService.updateCharacteristic(this.api.hap.Characteristic.CurrentTemperature, temp);
+        }
       }
 
       if (this.humidityService) {
-        this.humidityService.updateCharacteristic(this.api.hap.Characteristic.CurrentRelativeHumidity, this.obj.rh);
+        const rh = Number(this.obj.rh);
+        if (Number.isFinite(rh)) {
+          this.humidityService.updateCharacteristic(this.api.hap.Characteristic.CurrentRelativeHumidity, rh);
+        }
       }
 
       if (this.lightService) {
@@ -493,12 +514,14 @@ class Handler {
           }
         }
 
+        const humidifierPwr = Number.isFinite(parseInt(this.obj.pwr, 10)) ? parseInt(this.obj.pwr, 10) : 0;
+        const humidifierRh = Number.isFinite(Number(this.obj.rh)) ? Number(this.obj.rh) : 0;
         this.humidifierService
           .updateCharacteristic(
             this.api.hap.Characteristic.Active,
-            parseInt(this.obj.pwr) ? (this.obj.func === 'PH' ? 1 : 0) : 0,
+            humidifierPwr ? (this.obj.func === 'PH' ? 1 : 0) : 0,
           )
-          .updateCharacteristic(this.api.hap.Characteristic.CurrentRelativeHumidity, this.obj.rh)
+          .updateCharacteristic(this.api.hap.Characteristic.CurrentRelativeHumidity, humidifierRh)
           .updateCharacteristic(this.api.hap.Characteristic.WaterLevel, water_level)
           .updateCharacteristic(this.api.hap.Characteristic.TargetHumidifierDehumidifierState, 1)
           .updateCharacteristic(this.api.hap.Characteristic.RelativeHumidityHumidifierThreshold, speed_humidity);
@@ -552,6 +575,9 @@ class Handler {
         this.hepaFilterService
           .updateCharacteristic(this.api.hap.Characteristic.FilterChangeIndication, fltsts1change)
           .updateCharacteristic(this.api.hap.Characteristic.FilterLifeLevel, fltsts1life);
+      }
+      } catch (err) {
+        logger.warn('Error updating characteristics', this.accessory.displayName, err.message);
       }
     });
 
