@@ -223,12 +223,19 @@ class Handler {
         this.purifierService.updateCharacteristic(this.api.hap.Characteristic.TargetAirPurifierState, 0);
         logger.info(`Purifier Rotation Speed: value: ${value}`, this.accessory.displayName);
 
+        const speedConfig = this.speeds[speed - 1];
         let args = [...this.args];
         let cmds = [];
-        Object.entries(this.speeds[speed - 1]).forEach(([cmd, value]) => {
-          cmds.push(`${this.handleCommand(cmd, value)}`);
+        Object.entries(speedConfig).forEach(([cmd, val]) => {
+          cmds.push(`${this.handleCommand(cmd, val)}`);
         });
-        args.push('set', cmds.join(' '));
+        // aioairctrl needs -I (after "set") for integer values (om=1, om=2) - without it the device may ignore the command
+        const needsInt = Object.values(speedConfig).every((v) => typeof v === 'number' || (typeof v === 'string' && /^\d+$/.test(v)));
+        if (needsInt) {
+          args.push('set', '-I', ...cmds);
+        } else {
+          args.push('set', ...cmds);
+        }
 
         logger.info(`Purifier Rotation Speed: cmds: ${cmds.join(' ')}`, this.accessory.displayName);
 
